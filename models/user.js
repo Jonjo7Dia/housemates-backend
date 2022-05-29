@@ -14,6 +14,7 @@ userSchema.methods.generateAuthToken = function () {
     {
       _id: this._id,
     },
+    
     process.env.JWTPRIVATEKEY,
     { expiresIn: "7d" }
   );
