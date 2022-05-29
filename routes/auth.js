@@ -1,11 +1,12 @@
 const router = require('express').Router();
 const {User} = require('../models/user');
 const bcrypt = require('bcrypt'); 
-const validate =  require('../utils/validationSchema');
+const {validate }=  require('../utils/validationSchema');
 const generateTokens = require('../utils/generateToken');
 router.post('/', async (req,res) => {
     try {
         const {error} = validate(req.body);
+        console.log('username', req.body);
         if(error){
             return res.status(400).send({message: error.details[0].message});
         }

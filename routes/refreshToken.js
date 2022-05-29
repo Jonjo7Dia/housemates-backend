@@ -7,6 +7,7 @@ const router = Router();
 
 //get new access code
 router.post('/', async(req,res)=>{
+    console.log('idk', req.body);
     const {error} = refreshTokenBodyValidation(req.body);
     if(error){
         return res.status(400).json({error: true, message: error.details[0].message});
