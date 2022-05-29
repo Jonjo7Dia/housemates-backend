@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {User} = require('./models/user');
+const {User} = require('../models/user');
 const Joi = require('joi');
 const bcrypt = require('bcrypt');
 router.post('/', async (req,res) => {
@@ -20,6 +20,7 @@ router.post('/', async (req,res) => {
         res.status(200).send({data: token, message: 'Logged in successfully'});
     } catch (error) {
         res.status(500).send({message: 'Internal Server Error'})
+        console.log(error);
     }
 });
 
