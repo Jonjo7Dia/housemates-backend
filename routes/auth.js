@@ -1,31 +1,77 @@
-const router = require('express').Router();
-const {User} = require('../models/user');
-const bcrypt = require('bcrypt'); 
-const {validate }=  require('../utils/validationSchema');
+const { Router } = require("express");
+const User = require("../models/user");
+const bcrypt = require("bcrypt");
 const generateTokens = require('../utils/generateToken');
-router.post('/', async (req,res) => {
-    try {
-        const {error} = validate(req.body);
-        console.log('username', req.body);
-        if(error){
-            return res.status(400).send({message: error.details[0].message});
-        }
-        const user = await User.findOne({email: req.body.email});
-        if(!user){
-            return res.status(401).send({message: 'Invalid Email or Password'});
-        }
-        const validPassword = await bcrypt.compare(req.body.password, user.password);
-        if(!validPassword){
-            return res.status(401).send({message: 'Invalid Email or Password'})
-        }
-        const {accessToken, refreshToken} = await generateTokens(user);
-        res.status(200).send({accessToken, refreshToken, message: 'Logged in successfully'});
-    } catch (error) {
-        res.status(500).send({message: 'Internal Server Error'})
-        console.log(error);
+const {
+  signUpBodyValidation,
+  loginBodyValidation,
+} = require("../utils/validationSchema");
+const router = Router();
+
+//signup
+router.post("/signUp", async (req, res) => {
+  try {
+    const { error } = signUpBodyValidation(req.body);
+    if (error) {
+      return res
+        .status(400)
+        .json({ error: true, message: error.details[0].message });
     }
+    const user = await User.findOne({
+      email: req.body.email,
+    });
+    if (user) {
+      return res
+        .status(400)
+        .json({ error: true, message: "User with given email already exist" });
+    }
+    const salt = await bcrypt.genSalt(Number(process.env.SALT));
+    const hashPassword = await bcrypt.hash(req.body.password, salt);
+    await new User({ ...req.body, password: hashPassword }).save();
+    res
+      .status(201)
+      .json({ error: false, message: "Account created successfully" });
+  } catch (error) {
+    console.log(err);
+    res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
 });
 
+//login
 
+router.post("/login", async (req, res) => {
+  try {
+    const { error } = loginBodyValidation(req.body);
+    if (error) {
+      return res
+        .status(400)
+        .json({ error: true, message: error.details[0].message });
+    }
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      return res
+        .status(401)
+        .json({ error: true, message: "Invalid email or password" });
+    }
+    const verifiedPassword = await bcrypt.compare(
+      req.body.password,
+      user.password
+    );
+    if(!verifiedPassword){
+        return res.status(401).json({error: true, message: 'Invalid email or password'});
+    }
+    //generate access and refresh token
+    const {accessToken, refreshToken} = await generateTokens(user);
+    res.status(200).json({
+      error: false, 
+      accessToken, 
+      refreshToken,
+      message: 'Logged in successfully '
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: true, message: "Internal Server Error" });
+  }
+});
 
 module.exports = router;
