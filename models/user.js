@@ -20,6 +20,17 @@ const userSchema = new Schema({
     type: Array,
     required: false,
   },
+  houseInfo : {
+    type: Object,
+    required: false,
+    default: {
+      hasHouse: false, 
+      houseData : {
+        houseName: null,
+        houseId : null
+      },
+    },
+  },
   roles: {
     type: [String],
     enum: ['user', 'admin', 'super_admin'],

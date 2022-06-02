@@ -4,7 +4,7 @@ const dbConnect = require('./db');
 const authRoutes = require('./routes/auth');
 const refreshTokenRoutes = require('./routes/refreshToken');
 const userRoutes = require('./routes/user');
-
+const cors = require('cors');
 
 const app = express();
 
@@ -12,7 +12,7 @@ config();
 dbConnect();
 
 app.use(express.json());
-
+app.use(cors());
 app.use('/api', authRoutes);
 app.use('/api/refreshToken', refreshTokenRoutes);
 app.use('/api/users', userRoutes); 
